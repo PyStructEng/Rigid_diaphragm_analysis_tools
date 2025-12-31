@@ -114,11 +114,11 @@ def compute_rigid_diaph(walls: pd.DataFrame, inputs: dict) -> tuple[pd.DataFrame
     # Torsion ratios (match the spreadsheet structure):
     # For Vx torsion, ratio uses (ey * xbar * Ri_EW) / Jp
     # For Vy torsion, ratio uses (ex * ybar * Ri_NS) / Jp
-    df["RealTorRatio_X"] = np.where(Jp != 0, ey_real * df["xbar"] * df["Ri_EW"] / Jp, np.nan)
-    df["RealTorRatio_Y"] = np.where(Jp != 0, ex_real * df["ybar"] * df["Ri_NS"] / Jp, np.nan)
+    df["RealTorRatio_X"] = np.where(Jp != 0, ey_real * df["Ri_EW"] * df["ybar"] / Jp, np.nan)
+    df["RealTorRatio_Y"] = np.where(Jp != 0, ex_real * df["Ri_NS"] * df["xbar"] / Jp, np.nan)
 
-    df["AccTorRatio_X"] = np.where(Jp != 0, ey_acc * df["xbar"] * df["Ri_EW"] / Jp, np.nan)
-    df["AccTorRatio_Y"] = np.where(Jp != 0, ex_acc * df["ybar"] * df["Ri_NS"] / Jp, np.nan)
+    df["AccTorRatio_X"] = np.where(Jp != 0, ey_acc * df["Ri_EW"] * df["ybar"] / Jp, np.nan)
+    df["AccTorRatio_Y"] = np.where(Jp != 0, ex_acc * df["Ri_NS"] * df["xbar"] / Jp, np.nan)
 
     # Torsion shear
     df["RealTor_X"] = Vx * df["RealTorRatio_X"]
