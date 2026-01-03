@@ -1,11 +1,8 @@
 """
 Rigid Diaphragm Analysis — Streamlit App
 ======================================
-
-- Uses the SAME calculation logic as the validated Python script (no formula changes).
 - Flexible: supports any number of walls (EW and NS) via an editable table.
 - Displays the reference figure to the right of inputs.
-- Rounds all displayed inputs/outputs to 2 decimals to avoid long floats and truncation.
 """
 
 from __future__ import annotations
@@ -267,17 +264,17 @@ def main() -> None:
         with st.expander("What this app does (same logic as your Excel)", expanded=False):
             st.markdown(
                 """
-- Takes diaphragm inputs (equivalent to your blue cells) and a wall table (equivalent to D49–I52).
+- Takes diaphragm inputs and a wall table data input.
 - Assigns wall direction by name:
   - contains **EW** → x-direction wall (Rix = 1/Di, Riy = 0)
   - contains **NS** → y-direction wall (Rix = 0, Riy = 1/Di)
 - Applies the **paper offsets** to set the working origin (critical).
 - Computes CoR, eccentricities, **Jp**, direct shear, real torsion, accidental torsion (10%), then totals.
-- Displays a wide table with horizontal scrolling + download buttons (so no truncation).
+- Displays a table with all the calculations.
                 """
             )
 
-        st.subheader("Diaphragm inputs (2 decimals)")
+        st.subheader("Diaphragm inputs")
         c1, c2, c3, c4 = st.columns(4)
 
         with c1:
@@ -305,7 +302,7 @@ def main() -> None:
             "Fx": Fx, "Fy": Fy,
         }
 
-        st.subheader("Wall table (add/remove any number of walls) — 2 decimals")
+        st.subheader("Wall table (add/remove any number of walls)")
         st.caption("Wall Name must contain EW or NS. You can add rows using the table controls.")
 
         # Default rows (clean, no ellipsis)
@@ -363,10 +360,46 @@ def main() -> None:
             st.error(f"Error: {e}")
             st.stop()
 
-        st.subheader("Key results (2 decimals)")
+        st.subheader("Key results")
         st.table(_key_results_table(summary))
 
-        st.subheader("Wall-by-wall results (scroll horizontally — no truncation)")
+        # -----------------------------
+        # Wall forces summary (per wall)
+        # -----------------------------
+        st.markdown(
+            "<h3 style='margin-top: 0.6rem;'>Wall forces summary</h3>",
+            unsafe_allow_html=True,
+        )
+
+        # Pick key force columns (keep the logic untouched; this is just a view)
+        force_cols = [
+            "Wall Name",
+            "Direct Shear_x", "Direct Shear_y",
+            "Vx_Real Tor", "Vy_Real Tor",
+            "Vx_Acc_Tor", "Vy_Acc_Tor",
+            "Vx (kN)", "Vy (kN)",
+        ]
+        df_forces = df_out[force_cols].copy()
+
+        # Round numeric values to 2 decimals for display
+        num_cols = [c for c in df_forces.columns if c != "Wall Name"]
+        df_forces[num_cols] = df_forces[num_cols].apply(pd.to_numeric, errors="coerce").round(2)
+
+        # Optional: color negatives vs positives (works in Streamlit with pandas Styler)
+        try:
+            def _force_color(v):
+                if pd.isna(v):
+                    return ""
+                return "color: #1f7a1f;" if v >= 0 else "color: #b00020;"
+
+            styler = df_forces.style.format(precision=2).applymap(_force_color, subset=num_cols)
+            st.dataframe(styler, use_container_width=True, height=320)
+        except Exception:
+            # Fallback if Styler isn't supported in the installed Streamlit version
+            st.dataframe(df_forces, use_container_width=True, height=320)
+
+
+        st.subheader("Wall-by-wall results")
         df_show = df_out.copy()
         numeric_cols = [c for c in df_show.columns if c != "Wall Name"]
         df_show[numeric_cols] = df_show[numeric_cols].apply(pd.to_numeric, errors="coerce").round(2)
@@ -378,7 +411,7 @@ def main() -> None:
             hide_index=True,
         )
 
-        st.subheader("Download (2 decimals)")
+        st.subheader("Download")
         csv_bytes = df_show.to_csv(index=False).encode("utf-8")
         st.download_button(
             "Download results as CSV",
