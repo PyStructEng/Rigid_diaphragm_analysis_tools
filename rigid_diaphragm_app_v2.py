@@ -53,7 +53,7 @@ def compute_rigid_diaphragm(inputs: Dict[str, float], walls: List[Dict[str, obje
     B = float(inputs["B"])
     Xcm_manual = float(inputs["Xcm_manual"])
     Ycm_manual = float(inputs["Ycm_manual"])
-    W = float(inputs.get("W", 0.0))  # kept for completeness
+    W = float(inputs.get("W", 0.0))  # kN
     X_offset = float(inputs["X_offset"])
     Y_offset = float(inputs["Y_offset"])
     Fx = float(inputs["Fx"])
@@ -261,7 +261,7 @@ def main() -> None:
         st.caption("Paper origin + offset definition used for the working coordinate system.")
 
     with left:
-        with st.expander("What this app does (same logic as your Excel)", expanded=False):
+        with st.expander("What this app does", expanded=False):
             st.markdown(
                 """
 - Takes diaphragm inputs and a wall table data input.
@@ -279,20 +279,20 @@ def main() -> None:
 
         with c1:
             L = st.number_input("L (EW / X dimension) [m]", value=64.61, step=0.01, format="%.2f")
-            Xcm_manual = st.number_input("Xcm (manual, paper coords) [m]", value=31.50, step=0.01, format="%.2f")
-            X_offset = st.number_input("X paper offset (treat as x=0) [m]", value=55.80, step=0.01, format="%.2f")
+            Xcm_manual = st.number_input("Xcm (manual, from bluebeam) [m]", value=31.50, step=0.01, format="%.2f")
+            X_offset = st.number_input("X paper offset (treat bottom left as x=0) [m]", value=55.80, step=0.01, format="%.2f")
 
         with c2:
             B = st.number_input("B (NS / Y dimension) [m]", value=62.61, step=0.01, format="%.2f")
-            Ycm_manual = st.number_input("Ycm (manual, paper coords) [m]", value=34.50, step=0.01, format="%.2f")
-            Y_offset = st.number_input("Y paper offset (treat as y=0) [m]", value=14.70, step=0.01, format="%.2f")
+            Ycm_manual = st.number_input("Ycm (manual, from bluebeam) [m]", value=34.50, step=0.01, format="%.2f")
+            Y_offset = st.number_input("Y paper offset (treat bottom left as y=0) [m]", value=14.70, step=0.01, format="%.2f")
 
         with c3:
             Fx = st.number_input("Fx (applied force in X) [kN]", value=100.00, step=0.01, format="%.2f")
             Fy = st.number_input("Fy (applied force in Y) [kN]", value=80.00, step=0.01, format="%.2f")
 
         with c4:
-            W = st.number_input("W (diaphragm weight) [kN] (kept for completeness)", value=0.00, step=0.01, format="%.2f")
+            W = st.number_input("W (diaphragm weight) [kN] ", value=0.00, step=0.01, format="%.2f")
 
         inputs = {
             "L": L, "B": B,
